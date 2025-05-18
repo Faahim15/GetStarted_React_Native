@@ -1,68 +1,48 @@
-import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
+import { Button, FlatList, StyleSheet, View } from "react-native";
+import GoalItem from "./components/GoalItem";
+import GoalInputItem from "./components/GoalInputItem";
 
-export default function App() { 
-   const [enteredGoalText,setEnteredGoalText]=useState(''); 
-   const [courseGoals, setCourseGoal] = useState([]); 
-
-   const goalInputHandler=enteredText=>{
-      setEnteredGoalText(enteredText)
-   } 
-   const addGoalHandler=()=>{ 
-      const isDuplicate = courseGoals.some(goal => goal === enteredGoalText) 
-      if(!isDuplicate)
-      setCourseGoal(courseGoals =>[...courseGoals,enteredGoalText]); 
-   }
+export default function App() {
+  
+  const [courseGoals, setCourseGoal] = useState([]);
+  const [modlaVisibility, setModalVisibility]=useState(false);
+  
+  const addGoalHandler = (enteredGoalText) => {
+    const isDuplicate = courseGoals.some((goal) => goal === enteredGoalText);
+    if (!isDuplicate)
+      setCourseGoal((courseGoals) => [
+        ...courseGoals,
+        { text: enteredGoalText, id: Math.random().toString() },
+      ]);
+  }; 
+  const OnDeleteGoal =(id)=>{
+    setCourseGoal(currentCourseGoal=> currentCourseGoal.filter((goal)=>goal.id!==id) )
+  }
   return (
-    <View style={styles.appContainer} > 
-     <View style={styles.inputContainer} > 
-      <TextInput onChangeText={goalInputHandler} style={styles.textInput} placeholder="Your course goal!" />
-      <Button onPress={addGoalHandler} title='ADD GOAL' />
-     </View> 
-     <View style={styles.goalsContainer} >
-       
-       {
-        courseGoals.map((goal,id)=><Text style={styles.goalItem} key={id}>{goal}</Text>)
-       }
-     </View> 
+    <View style={styles.appContainer}> 
+    <Button onPress={()=>setModalVisibility(true)} title='Add New Goal' color='#5e0acc' />
+    { modlaVisibility && <GoalInputItem visible ={ modlaVisibility } addGoalHandler={addGoalHandler}  ></GoalInputItem>}
+      <View style={styles.goalsContainer}>
+        <FlatList
+          data={courseGoals}
+          renderItem={({ item }) => <GoalItem OnDeleteGoal={OnDeleteGoal} goal={item} />}
+          keyExtractor={(item, index) => item.id}
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-     appContainer:{ 
-       flex:1,
-       padding:60,
-       paddingHorizontal: 16
-     },
-     inputContainer:{ 
-      flex: 1,
-      flexDirection:'row', 
-      justifyContent: 'space-between',
-      alignItems:'center',
-      marginBottom:24,
-      borderBottomWidth:1,
-      borderColor:'#cccccc'
-      
-     }, 
-    textInput:{
-      borderWidth: 1,
-      borderColor:'#cccccc',
-      width:'70%',
-      marginRight: 8,
-      padding: 8, 
-
-    },
-    goalsContainer:{
-      flex: 4,
-      
-    }, 
-    goalItem: {
-      margin: 8,
-      padding: 8, 
-      borderRadius: 6, 
-      backgroundColor: '#5e0acc', 
-      color: 'white',
-    }
+  appContainer: {
+    flex: 1,
+    padding: 60,
+    paddingHorizontal: 16,
+  },
+ 
+  goalsContainer: {
+    flex: 4,
+  },
 });
